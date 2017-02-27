@@ -35,7 +35,7 @@ public class ViewsNode extends DisplayableItemNode {
 
     public ViewsNode(SleuthkitCase sleuthkitCase) {
         super(new RootContentChildren(Arrays.asList(
-                new FileTypeExtensionFilters(sleuthkitCase),
+                new FileTypes(sleuthkitCase),
                 // June '15: Recent Files was removed because it was not useful w/out filtering
                 // add it back in if we can filter the results to a more managable size. 
                 // new RecentFiles(sleuthkitCase),
@@ -73,13 +73,8 @@ public class ViewsNode extends DisplayableItemNode {
         return s;
     }
 
-    /*
-     * TODO (AUT-1849): Correct or remove peristent column reordering code
-     *
-     * Added to support this feature.
-     */
-//    @Override
-//    public String getItemType() {
-//        return "Views"; //NON-NLS
-//    }
+    @Override
+    public String getItemType() {
+        return getClass().getName();
+    }
 }

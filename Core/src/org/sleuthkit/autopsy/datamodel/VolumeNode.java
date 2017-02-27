@@ -80,6 +80,10 @@ public class VolumeNode extends AbstractContentNode<Volume> {
         Case.removePropertyChangeListener(pcl);
     }
 
+    /*
+     * This property change listener refreshes the tree when a new file is
+     * carved out of the unallocated space of this volume.
+     */
     private final PropertyChangeListener pcl = (PropertyChangeEvent evt) -> {
         String eventType = evt.getPropertyName();
 
@@ -194,13 +198,8 @@ public class VolumeNode extends AbstractContentNode<Volume> {
         return v.visit(this);
     }
 
-    /*
-     * TODO (AUT-1849): Correct or remove peristent column reordering code
-     *
-     * Added to support this feature.
-     */
-//    @Override
-//    public String getItemType() {
-//        return "Volume"; //NON-NLS
-//    }
+    @Override
+    public String getItemType() {
+        return DisplayableItemNode.FILE_PARENT_NODE_KEY;
+    }
 }

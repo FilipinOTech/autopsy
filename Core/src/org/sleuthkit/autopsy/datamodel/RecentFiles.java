@@ -18,6 +18,8 @@
  */
 package org.sleuthkit.autopsy.datamodel;
 
+import org.sleuthkit.autopsy.datamodel.AutopsyVisitableItem;
+import org.sleuthkit.autopsy.datamodel.AutopsyItemVisitor;
 import org.openide.util.NbBundle;
 import org.sleuthkit.datamodel.SleuthkitCase;
 
@@ -25,7 +27,7 @@ import org.sleuthkit.datamodel.SleuthkitCase;
  * Recent files node support NOTE: As of june '15 we do not display this in the
  * tree. It can be added back when we have filtering in the results area.
  */
-class RecentFiles implements AutopsyVisitableItem {
+public class RecentFiles implements AutopsyVisitableItem {
 
     SleuthkitCase skCase;
 

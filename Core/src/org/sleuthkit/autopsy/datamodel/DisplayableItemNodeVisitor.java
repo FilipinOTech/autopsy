@@ -1,15 +1,15 @@
 /*
  * Autopsy Forensic Browser
- * 
- * Copyright 2011 - 2015 Basis Technology Corp.
+ *
+ * Copyright 2011 - 2016 Basis Technology Corp.
  * Contact: carrier <at> sleuthkit <dot> org
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,8 @@ import org.sleuthkit.autopsy.datamodel.DeletedContent.DeletedContentsChildren.De
 import org.sleuthkit.autopsy.datamodel.DeletedContent.DeletedContentsNode;
 import org.sleuthkit.autopsy.datamodel.FileSize.FileSizeRootChildren.FileSizeNode;
 import org.sleuthkit.autopsy.datamodel.FileSize.FileSizeRootNode;
+import org.sleuthkit.autopsy.datamodel.FileTypes.FileTypesNode;
+import org.sleuthkit.autopsy.datamodel.accounts.Accounts;
 
 /**
  * Visitor pattern that goes over all nodes in the directory tree. This includes
@@ -48,12 +50,15 @@ public interface DisplayableItemNodeVisitor<T> {
 
     T visit(VolumeNode vn);
 
+    T visit(SlackFileNode sfn);
+
+
     /*
      * Views Area
      */
     T visit(ViewsNode vn);
 
-    T visit(FileTypeNode fsfn);
+    T visit(org.sleuthkit.autopsy.datamodel.FileTypesByExtension.FileExtensionNode fsfn);
 
     T visit(DeletedContentNode dcn);
 
@@ -63,7 +68,7 @@ public interface DisplayableItemNodeVisitor<T> {
 
     T visit(FileSizeNode fsn);
 
-    T visit(FileTypesNode sfn);
+    T visit(org.sleuthkit.autopsy.datamodel.FileTypesByExtension.FileTypesByExtNode sfn);
 
     T visit(RecentFilesNode rfn);
 
@@ -122,6 +127,33 @@ public interface DisplayableItemNodeVisitor<T> {
 
     T visit(Reports.ReportNode reportNode);
 
+    /*
+     * Accounts
+     */
+    T visit(Accounts.AccountsRootNode accountRootNode);
+
+    T visit(Accounts.CreditCardNumberAccountTypeNode accountTypeNode);
+
+    T visit(Accounts.ByBINNode byArtifactNode);
+
+    T visit(Accounts.ByFileNode byFileNode);
+
+    T visit(Accounts.FileWithCCNNode byFileNode);
+
+    T visit(Accounts.BINNode binNode);
+
+    T visit(Accounts.DefaultAccountTypeNode node);
+
+    T visit(FileTypes.FileTypesNode fileTypes);
+
+    T visit(FileTypesByMimeType.ByMimeTypeNode ftByMimeTypeNode);
+
+    T visit(FileTypesByMimeType.MediaTypeNode ftByMimeTypeMediaType);
+
+    T visit(FileTypesByMimeType.MediaSubTypeNode ftByMimeTypeMediaSubType);
+
+    T visit(EmptyNode.MessageNode emptyNode);
+
     /**
      * Visitor with an implementable default behavior for all types. Override
      * specific visit types to not use the default behavior.
@@ -160,6 +192,11 @@ public interface DisplayableItemNodeVisitor<T> {
         }
 
         @Override
+        public T visit(SlackFileNode sfn) {
+            return defaultVisit(sfn);
+        }
+
+        @Override
         public T visit(BlackboardArtifactNode ban) {
             return defaultVisit(ban);
         }
@@ -175,8 +212,28 @@ public interface DisplayableItemNodeVisitor<T> {
         }
 
         @Override
-        public T visit(FileTypeNode fsfn) {
+        public T visit(org.sleuthkit.autopsy.datamodel.FileTypesByExtension.FileExtensionNode fsfn) {
             return defaultVisit(fsfn);
+        }
+
+        @Override
+        public T visit(FileTypesByMimeType.ByMimeTypeNode ftByMimeTypeNode) {
+            return defaultVisit(ftByMimeTypeNode);
+        }
+
+        @Override
+        public T visit(FileTypesByMimeType.MediaTypeNode ftByMimeTypeMediaTypeNode) {
+            return defaultVisit(ftByMimeTypeMediaTypeNode);
+        }
+
+        @Override
+        public T visit(FileTypesByMimeType.MediaSubTypeNode ftByMimeTypeMediaTypeNode) {
+            return defaultVisit(ftByMimeTypeMediaTypeNode);
+        }
+
+        @Override
+        public T visit(EmptyNode.MessageNode ftByMimeTypeEmptyNode) {
+            return defaultVisit(ftByMimeTypeEmptyNode);
         }
 
         @Override
@@ -200,7 +257,7 @@ public interface DisplayableItemNodeVisitor<T> {
         }
 
         @Override
-        public T visit(FileTypesNode sfn) {
+        public T visit(org.sleuthkit.autopsy.datamodel.FileTypesByExtension.FileTypesByExtNode sfn) {
             return defaultVisit(sfn);
         }
 
@@ -237,6 +294,11 @@ public interface DisplayableItemNodeVisitor<T> {
         @Override
         public T visit(ResultsNode rn) {
             return defaultVisit(rn);
+        }
+
+        @Override
+        public T visit(FileTypesNode ft) {
+            return defaultVisit(ft);
         }
 
         @Override
@@ -331,6 +393,41 @@ public interface DisplayableItemNodeVisitor<T> {
 
         @Override
         public T visit(Reports.ReportNode node) {
+            return defaultVisit(node);
+        }
+
+        @Override
+        public T visit(Accounts.CreditCardNumberAccountTypeNode node) {
+            return defaultVisit(node);
+        }
+
+        @Override
+        public T visit(Accounts.AccountsRootNode node) {
+            return defaultVisit(node);
+        }
+
+        @Override
+        public T visit(Accounts.ByBINNode node) {
+            return defaultVisit(node);
+        }
+
+        @Override
+        public T visit(Accounts.ByFileNode node) {
+            return defaultVisit(node);
+        }
+
+        @Override
+        public T visit(Accounts.FileWithCCNNode node) {
+            return defaultVisit(node);
+        }
+
+        @Override
+        public T visit(Accounts.BINNode node) {
+            return defaultVisit(node);
+        }
+
+        @Override
+        public T visit(Accounts.DefaultAccountTypeNode node) {
             return defaultVisit(node);
         }
     }

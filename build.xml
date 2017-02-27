@@ -15,7 +15,7 @@
         <or>
             <matches string="${java.version}" pattern="1\.8\.0_6[6-9]"/>
             <matches string="${java.version}" pattern="1\.8\.0_[7-9][0-9]"/>
-         <matches string="${java.version}" pattern="1\.8\.0_[1-9][0-9][0-9]"/>
+            <matches string="${java.version}" pattern="1\.8\.0_[1-9][0-9][0-9]"/>
             <matches string="${java.version}" pattern="1\.8\.[1-9]_[0-9][0-9]"/>
             <equals arg1="${ant.java.version}" arg2="1.9"/>
         </or>
@@ -91,8 +91,6 @@
                 </copy>
             </then>
         </if>
-        
-        <antcall target="copyLibsToZip"/>
         
         <property name="app.property.file" value="${zip-tmp}/${app.name}/etc/${app.name}.conf" />
         <!-- for Japanese localized version add option:  -Duser.language=ja -->        
@@ -258,6 +256,9 @@
     <target name="build-installer" depends="getProps, doxygen, build-zip" description="Builds Autopsy installer.">
         <delete dir="${nbdist.dir}/${app.name}-installer" quiet="true"/>
         <unzip src="${nbdist.dir}/${app.name}-${app.version}.zip" dest="${nbdist.dir}/${app.name}-installer"/>
+        <!-- Disable the Experimental module by default for the installed version -->
+        <replace file="${nbdist.dir}/${app.name}-installer/autopsy/config/modules/org-sleuthkit-autopsy-experimental.xml" token="&lt;param name=&quot;enabled&quot;&gt;true&lt;/param&gt;" value="&lt;param name=&quot;enabled&quot;&gt;false&lt;/param&gt;"/>
+        <echo file="${nbdist.dir}/${app.name}-installer/autopsy/.lastModified" message="" />
         <antcall target="build-installer-${os.family}" />
     </target>
 </project>

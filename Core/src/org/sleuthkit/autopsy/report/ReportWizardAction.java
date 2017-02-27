@@ -47,7 +47,8 @@ import org.sleuthkit.datamodel.BlackboardArtifact;
 @ActionID(category = "Tools", id = "org.sleuthkit.autopsy.report.ReportWizardAction")
 @ActionRegistration(displayName = "#CTL_ReportWizardAction", lazy = false)
 @ActionReferences(value = {
-    @ActionReference(path = "Menu/Tools", position = 80)})
+    @ActionReference(path = "Menu/Tools", position = 103),
+    @ActionReference(path = "Toolbars/Case", position = 103)})
 public final class ReportWizardAction extends CallableSystemAction implements Presenter.Toolbar, ActionListener {
 
     private final JButton toolbarButton = new JButton();
@@ -64,7 +65,6 @@ public final class ReportWizardAction extends CallableSystemAction implements Pr
         wiz.setTitleFormat(new MessageFormat("{0} {1}"));
         wiz.setTitle(NbBundle.getMessage(ReportWizardAction.class, "ReportWizardAction.reportWiz.title"));
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            @SuppressWarnings("unchecked")
             ReportGenerator generator = new ReportGenerator(); //NON-NLS
             TableReportModule tableReport = (TableReportModule) wiz.getProperty("tableModule");
             GeneralReportModule generalReport = (GeneralReportModule) wiz.getProperty("generalModule");

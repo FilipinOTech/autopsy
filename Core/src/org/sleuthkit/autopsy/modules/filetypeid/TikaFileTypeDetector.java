@@ -24,9 +24,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypes;
 
 import org.sleuthkit.datamodel.AbstractFile;
-import org.sleuthkit.datamodel.BlackboardArtifact;
-import org.sleuthkit.datamodel.BlackboardAttribute;
-import org.sleuthkit.datamodel.TskCoreException;
 
 /**
  * @deprecated Use org.sleuthkit.autopsy.modules.filetypeid.FileTypeDetector
@@ -39,38 +36,15 @@ public class TikaFileTypeDetector {
     private final int BUFFER_SIZE = 64 * 1024; //how many bytes to pass in
     private final byte buffer[] = new byte[BUFFER_SIZE];
 
-    /**
-     * Detect the mime type of the passed in file and save it to the blackboard
-     *
-     * @deprecated Use FileTypeDetector.detectAndPostToBlackboard(AbstractFile
-     * file) instead.
-     * @param abstractFile
-     *
-     * @return mime type or null
-     *
-     * @throws TskCoreException
-     */
-    @Deprecated
-    public synchronized String detectAndSave(AbstractFile abstractFile) throws TskCoreException {
-        String mimeType = detect(abstractFile);
-        if (mimeType != null) {
-            // add artifact
-            BlackboardArtifact getInfoArt = abstractFile.getGenInfoArtifact();
-            BlackboardAttribute batt = new BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_FILE_TYPE_SIG.getTypeID(), FileTypeIdModuleFactory.getModuleName(), mimeType);
-            getInfoArt.addAttribute(batt);
-
-            // we don't fire the event because we just updated TSK_GEN_INFO, which isn't displayed in the tree and is vague.
-        }
-        return mimeType;
-    }
 
     /**
      * Detect the mime type of the passed in file
      *
-     * @deprecated Use FileTypeDetector.detect(AbstractFile file) instead.
      * @param abstractFile
      *
      * @return mime type of detected format or null
+     *
+     * @deprecated Use FileTypeDetector.detect(AbstractFile file) instead.
      */
     @Deprecated
     public synchronized String detect(AbstractFile abstractFile) {

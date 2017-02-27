@@ -222,8 +222,8 @@ public class EventsRepository {
      * @return A List of event IDs for the events that are derived from the
      *         given file.
      */
-    public List<Long> getEventIDsForFile(AbstractFile file, boolean includedDerivedArtifacts) {
-        return eventDB.getEventIDsForFile(file, includedDerivedArtifacts);
+    public List<Long> getEventIDsForFile(AbstractFile file, boolean includeDerivedArtifacts) {
+        return eventDB.getEventIDsForFile(file, includeDerivedArtifacts);
     }
 
     /**
@@ -517,7 +517,8 @@ public class EventsRepository {
                 //reset database //TODO: can we do more incremental updates? -jm
                 eventDB.reInitializeDB();
                 //grab ids of all files
-                List<Long> fileIDs = skCase.findAllFileIdsWhere("name != '.' AND name != '..'"); //NON-NLS
+                List<Long> fileIDs = skCase.findAllFileIdsWhere("name != '.' AND name != '..'" + 
+                        " AND type != " + TskData.TSK_DB_FILES_TYPE_ENUM.SLACK.ordinal()); //NON-NLS
                 final int numFiles = fileIDs.size();
 
                 trans = eventDB.beginTransaction();
@@ -677,11 +678,10 @@ public class EventsRepository {
         }
 
         /**
-         * populate all the events of one subtype
+         * populate all the events of one type
          *
-         * @param subType the subtype to populate
+         * @param type the type to populate
          * @param trans   the db transaction to use
-         * @param skCase  a reference to the sleuthkit case
          */
         @NbBundle.Messages({"# {0} - event type ", "progressWindow.populatingXevents=Populating {0} events"})
         private void populateEventType(final ArtifactEventType type, EventDB.EventTransaction trans) {

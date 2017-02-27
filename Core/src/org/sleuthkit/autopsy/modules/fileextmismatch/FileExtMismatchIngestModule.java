@@ -34,6 +34,7 @@ import org.sleuthkit.autopsy.ingest.IngestMessage;
 import org.sleuthkit.autopsy.ingest.IngestModuleReferenceCounter;
 import org.sleuthkit.autopsy.ingest.IngestServices;
 import org.sleuthkit.autopsy.ingest.ModuleDataEvent;
+import org.sleuthkit.autopsy.modules.fileextmismatch.FileExtMismatchDetectorModuleSettings.CHECK_TYPE;
 import org.sleuthkit.autopsy.modules.filetypeid.FileTypeDetector;
 import org.sleuthkit.datamodel.AbstractFile;
 import org.sleuthkit.datamodel.BlackboardArtifact;
@@ -72,7 +73,7 @@ public class FileExtMismatchIngestModule implements FileIngestModule {
      * Update the match time total and increment num of files for this job
      *
      * @param ingestJobId
-     * @param matchTimeInc amount of time to add
+     * @param processTimeInc amount of time to add
      */
     private static synchronized void addToTotals(long ingestJobId, long processTimeInc) {
         IngestJobTotals ingestJobTotals = totalsForIngestJobs.get(ingestJobId);
@@ -116,6 +117,7 @@ public class FileExtMismatchIngestModule implements FileIngestModule {
         // skip non-files
         if ((abstractFile.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.UNALLOC_BLOCKS)
                 || (abstractFile.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.UNUSED_BLOCKS)
+                || (abstractFile.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.SLACK)
                 || (abstractFile.isFile() == false)) {
             return ProcessResult.OK;
         }
@@ -173,9 +175,16 @@ public class FileExtMismatchIngestModule implements FileIngestModule {
         if (currActualSigType == null) {
             return false;
         }
-        if (settings.skipFilesWithTextPlainMimeType()) {
-            if (!currActualExt.isEmpty() && currActualSigType.equals("text/plain")) { //NON-NLS
-                return false;
+        if (settings.getCheckType() != CHECK_TYPE.ALL) {
+            if (settings.getCheckType() == CHECK_TYPE.NO_TEXT_FILES) {
+                if (!currActualExt.isEmpty() && currActualSigType.equals("text/plain")) { //NON-NLS
+                    return false;
+                }
+            }
+            if (settings.getCheckType() == CHECK_TYPE.ONLY_MEDIA_AND_EXE) {
+                if (!FileExtMismatchDetectorModuleSettings.MEDIA_AND_EXE_MIME_TYPES.contains(currActualSigType)) {
+                    return false;
+                }
             }
         }
 
