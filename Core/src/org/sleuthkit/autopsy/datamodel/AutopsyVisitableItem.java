@@ -1,7 +1,7 @@
 /*
  * Autopsy Forensic Browser
  * 
- * Copyright 2011 Basis Technology Corp.
+ * Copyright 2011-2016 Basis Technology Corp.
  * Contact: carrier <at> sleuthkit <dot> org
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 package org.sleuthkit.autopsy.datamodel;
+;
 
 /**
  * AutopsyVisitableItems are the nodes in the directory tree that are for
  * structure only. They are not associated with content objects.
  */
-interface AutopsyVisitableItem {
+public interface AutopsyVisitableItem {
 
     /**
      * visitor pattern support

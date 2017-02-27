@@ -1,3 +1,33 @@
+---------------- VERSION 4.3.0  --------------
+Improvements:
+- Support for slack space on files (as separate virtual files) to enable keyword searching and other analysis. 
+- Simple mode for the file extension mismatch module that focuses on only only multimedia and executable files to reduce false positives. 
+- New view in tree that shows the MIME types. 
+- Tagged items are highlighted in table views.
+- Ordering of columns is saved when user changes them. 
+- Support for Android devices with preloaders (uses backup GPT)
+- Support for images with no file systems (all data is added as unallocated space)
+- User can bulk add list of keywords to a keyword list.
+- New "Experimental" module (activate via Tools, Plugins) with auto ingest feature.
+- Assorted bug fixes and minor enhancements. 
+
+
+---------------- VERSION 4.2.0  --------------
+Improvements:
+- Credit card account search.
+- Encoding/decoding of extracted files to avoid anti-virus alerts/quarantine.
+- Ingest history (start time, end time, status, which versions of which ingest 
+modules were run). 
+- Ingest history used to warn before doing redundant analysis. 
+- Options panel for managing custom tag names.
+- Options panel for setting external viewer associations.
+- Keyboard shortcut for applying Bookmark tags.
+- Improved PhotoRec carver ingest module cancellation responsiveness.
+- Results content viewer formats dates instead of showing raw seconds since 
+epoch.
+- Update to PostgreSQL 9.5.
+- Assorted bug fixes and minor enhancements. 
+
 ---------------- VERSION 4.1.1  --------------
 Bug Fixes:
 - Restored ability of Python modules to import standard Python libraries. 

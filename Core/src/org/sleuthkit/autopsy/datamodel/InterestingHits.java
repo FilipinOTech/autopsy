@@ -64,20 +64,28 @@ public class InterestingHits implements AutopsyVisitableItem {
 
     private class InterestingResults extends Observable {
 
+        // NOTE: the map can be accessed by multiple worker threads and needs to be synchronized
         private final Map<String, Set<Long>> interestingItemsMap = new LinkedHashMap<>();
 
         public List<String> getSetNames() {
-            List<String> setNames = new ArrayList<>(interestingItemsMap.keySet());
+            List<String> setNames;
+            synchronized (interestingItemsMap) {
+                setNames = new ArrayList<>(interestingItemsMap.keySet());
+            }                
             Collections.sort(setNames);
             return setNames;
         }
 
         public Set<Long> getArtifactIds(String setName) {
-            return interestingItemsMap.get(setName);
+            synchronized (interestingItemsMap) {
+                return interestingItemsMap.get(setName);
+            }
         }
 
         public void update() {
-            interestingItemsMap.clear();
+            synchronized (interestingItemsMap) {
+                interestingItemsMap.clear();
+            }
             loadArtifacts(BlackboardArtifact.ARTIFACT_TYPE.TSK_INTERESTING_FILE_HIT);
             loadArtifacts(BlackboardArtifact.ARTIFACT_TYPE.TSK_INTERESTING_ARTIFACT_HIT);
             setChanged();
@@ -103,14 +111,16 @@ public class InterestingHits implements AutopsyVisitableItem {
                     + " AND blackboard_artifacts.artifact_type_id=" + artId; //NON-NLS
 
             try (CaseDbQuery dbQuery = skCase.executeQuery(query)) {
-                ResultSet resultSet = dbQuery.getResultSet();
-                while (resultSet.next()) {
-                    String value = resultSet.getString("value_text"); //NON-NLS
-                    long artifactId = resultSet.getLong("artifact_id"); //NON-NLS
-                    if (!interestingItemsMap.containsKey(value)) {
-                        interestingItemsMap.put(value, new HashSet<>());
+                synchronized (interestingItemsMap) {
+                    ResultSet resultSet = dbQuery.getResultSet();
+                    while (resultSet.next()) {
+                        String value = resultSet.getString("value_text"); //NON-NLS
+                        long artifactId = resultSet.getLong("artifact_id"); //NON-NLS
+                        if (!interestingItemsMap.containsKey(value)) {
+                            interestingItemsMap.put(value, new HashSet<>());
+                        }
+                        interestingItemsMap.get(value).add(artifactId);
                     }
-                    interestingItemsMap.get(value).add(artifactId);
                 }
             } catch (TskCoreException | SQLException ex) {
                 logger.log(Level.WARNING, "SQL Exception occurred: ", ex); //NON-NLS
@@ -162,15 +172,10 @@ public class InterestingHits implements AutopsyVisitableItem {
             return s;
         }
 
-        /*
-         * TODO (AUT-1849): Correct or remove peristent column reordering code
-         *
-         * Added to support this feature.
-         */
-//        @Override
-//        public String getItemType() {
-//            return "InterestingHitsRoot"; //NON-NLS
-//        }
+        @Override
+        public String getItemType() {
+            return getClass().getName();
+        }
     }
 
     private class SetNameFactory extends ChildFactory.Detachable<String> implements Observer {
@@ -318,15 +323,14 @@ public class InterestingHits implements AutopsyVisitableItem {
             updateDisplayName();
         }
 
-        /*
-         * TODO (AUT-1849): Correct or remove peristent column reordering code
-         *
-         * Added to support this feature.
-         */
-//        @Override
-//        public String getItemType() {
-//            return "InterestingHitsSetName"; //NON-NLS
-//        }
+        @Override
+        public String getItemType() {
+            /**
+             * For custom settings for each rule set, return
+             * getClass().getName() + setName instead.
+             */
+            return getClass().getName();
+        }
     }
 
     private class HitFactory extends ChildFactory<Long> implements Observer {

@@ -1,15 +1,15 @@
 /*
  * Autopsy Forensic Browser
- * 
- * Copyright 2011-2014 Basis Technology Corp.
+ *
+ * Copyright 2011-2016 Basis Technology Corp.
  * Contact: carrier <at> sleuthkit <dot> org
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,24 +18,26 @@
  */
 package org.sleuthkit.autopsy.datamodel;
 
+import org.sleuthkit.autopsy.datamodel.accounts.Accounts;
+
 /**
  * This visitor goes over the AutopsyVisitableItems, which are currently the
  * nodes in the tree that are structural and not nodes that are from
  * Sleuthkit-based data model objects.
  */
-interface AutopsyItemVisitor<T> {
+public interface AutopsyItemVisitor<T> {
 
     T visit(DataSources i);
 
     T visit(Views v);
 
-    T visit(FileTypeExtensionFilters sf);
+    T visit(FileTypesByExtension sf);
 
-    T visit(FileTypeExtensionFilters.RootFilter fsf);
+    T visit(FileTypesByExtension.RootFilter fsf);
 
-    T visit(FileTypeExtensionFilters.DocumentFilter df);
+    T visit(FileTypesByExtension.DocumentFilter df);
 
-    T visit(FileTypeExtensionFilters.ExecutableFilter ef);
+    T visit(FileTypesByExtension.ExecutableFilter ef);
 
     T visit(RecentFiles rf);
 
@@ -65,6 +67,13 @@ interface AutopsyItemVisitor<T> {
 
     T visit(Reports reportsItem);
 
+    T visit(Accounts accountsItem);
+
+    T visit(FileTypes fileTypesItem);
+
+    T visit(FileTypesByMimeType aThis);
+
+
     static abstract public class Default<T> implements AutopsyItemVisitor<T> {
 
         protected abstract T defaultVisit(AutopsyVisitableItem ec);
@@ -75,25 +84,30 @@ interface AutopsyItemVisitor<T> {
         }
 
         @Override
-        public T visit(FileTypeExtensionFilters sf) {
+        public T visit(FileTypesByExtension sf) {
             return defaultVisit(sf);
         }
 
         @Override
-        public T visit(FileTypeExtensionFilters.RootFilter fsf) {
+        public T visit(FileTypesByExtension.RootFilter fsf) {
             return defaultVisit(fsf);
         }
 
         @Override
-        public T visit(FileTypeExtensionFilters.DocumentFilter df) {
+        public T visit(FileTypesByExtension.DocumentFilter df) {
             return defaultVisit(df);
         }
 
         @Override
-        public T visit(FileTypeExtensionFilters.ExecutableFilter ef) {
+        public T visit(FileTypesByExtension.ExecutableFilter ef) {
             return defaultVisit(ef);
         }
-
+        
+        @Override
+        public T visit(FileTypesByMimeType ftByMimeType) {
+            return defaultVisit(ftByMimeType);
+        }
+        
         @Override
         public T visit(DeletedContent dc) {
             return defaultVisit(dc);
@@ -164,9 +178,20 @@ interface AutopsyItemVisitor<T> {
             return defaultVisit(r);
         }
 
+        
+        @Override
+        public T visit(FileTypes ft) {
+            return defaultVisit(ft);
+        }
+        
         @Override
         public T visit(Reports reportsItem) {
             return defaultVisit(reportsItem);
+        }
+
+        @Override
+        public T visit(Accounts accountsItem) {
+            return defaultVisit(accountsItem);
         }
     }
 }

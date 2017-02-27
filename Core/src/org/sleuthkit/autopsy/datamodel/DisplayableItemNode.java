@@ -21,6 +21,10 @@ package org.sleuthkit.autopsy.datamodel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
+import org.sleuthkit.datamodel.AbstractFile;
+import org.sleuthkit.datamodel.BlackboardArtifact;
+import org.sleuthkit.datamodel.BlackboardAttribute;
+import org.sleuthkit.datamodel.TskCoreException;
 
 /**
  * A DisplayableItem is any node in the Autopsy directory tree. All of the nodes
@@ -28,6 +32,8 @@ import org.openide.util.Lookup;
  * views, extracted results, etc. areas.
  */
 public abstract class DisplayableItemNode extends AbstractNode {
+
+    final static String FILE_PARENT_NODE_KEY = "orgsleuthkitautopsydatamodel" + "FileTypeParentNode";
 
     public DisplayableItemNode(Children children) {
         super(children);
@@ -41,10 +47,37 @@ public abstract class DisplayableItemNode extends AbstractNode {
 
     public abstract <T> T accept(DisplayableItemNodeVisitor<T> v);
 
-    /*
-     * TODO (AUT-1849): Correct or remove peristent column reordering code
+    /**
+     * Returns type of DisplayableItemNode to allow TableFilterNode to pass
+     * the information to DataResultViewerTable to allow custom settings for
+     * column orderings.
      * 
-     * Added to support this feature.
+     * @return A String representing the type of node, based on its name and
+     *         whether or not it wraps any special items (filters, artifact
+     *         types).
      */
-//    public abstract String getItemType();
+    public abstract String getItemType();
+
+    /**
+     * this code started as a cut and past of
+     * DataResultFilterNode.GetPopupActionsDisplayableItemNodeVisitor.findLinked(BlackboardArtifactNode
+     * ba)
+     *
+     * @param artifact
+     *
+     * @return
+     */
+    static AbstractFile findLinked(BlackboardArtifact artifact) throws TskCoreException {
+
+        BlackboardAttribute pathIDAttribute = artifact.getAttribute(new BlackboardAttribute.Type(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_PATH_ID));
+
+        if (pathIDAttribute != null) {
+            long contentID = pathIDAttribute.getValueLong();
+            if (contentID != -1) {
+                return artifact.getSleuthkitCase().getAbstractFileById(contentID);
+            }
+        }
+
+        return null;
+    }
 }

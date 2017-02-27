@@ -211,7 +211,13 @@ public class CategoryManager {
             categoryEventBus.unregister(listener);
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("missing event subscriber for an annotated method. Is " + listener + " registered?")) { //NON-NLS
-                LOGGER.log(Level.WARNING, "Attempted to unregister {0} for category change events, but it was not registered.", listener.toString()); //NON-NLS
+                /*
+                 * We don't fully understand why we are getting this exception
+                 * when the groups should all be registered. To avoid cluttering
+                 * the logs we have disabled recording this exception. This
+                 * documented in issues 738 and 802.
+                 */
+                //LOGGER.log(Level.WARNING, "Attempted to unregister {0} for category change events, but it was not registered.", listener.toString()); //NON-NLS
             } else {
                 throw e;
             }
@@ -255,6 +261,7 @@ public class CategoryManager {
                             tagsManager.deleteContentTag(ct);
                         } catch (TskCoreException tskException) {
                             LOGGER.log(Level.SEVERE, "Failed to delete content tag. Unable to maintain categories in a consistent state.", tskException); //NON-NLS
+                            break;
                         }
                     }
                 }

@@ -64,12 +64,54 @@ public class Installer extends ModuleInstall {
                 //Note: if shipping with a different CRT version, this will only print a warning
                 //and try to use linker mechanism to find the correct versions of libs.
                 //We should update this if we officially switch to a new version of CRT/compiler
-                System.loadLibrary("msvcr100"); //NON-NLS
-                System.loadLibrary("msvcp100"); //NON-NLS
-                
-                logger.log(Level.INFO, "MSVCR100 and MSVCP100 libraries loaded"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-console-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-datetime-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-debug-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-errorhandling-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-file-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-file-l1-2-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-file-l2-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-handle-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-heap-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-interlocked-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-libraryloader-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-localization-l1-2-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-memory-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-namedpipe-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-processenvironment-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-processthreads-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-processthreads-l1-1-1"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-profile-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-rtlsupport-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-string-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-synch-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-synch-l1-2-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-sysinfo-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-timezone-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-core-util-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-conio-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-convert-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-environment-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-filesystem-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-heap-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-locale-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-math-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-multibyte-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-private-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-process-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-runtime-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-stdio-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-string-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-time-l1-1-0"); //NON-NLS
+                System.loadLibrary("api-ms-win-crt-utility-l1-1-0"); //NON-NLS
+
+                System.loadLibrary("ucrtbase"); //NON-NLS
+                System.loadLibrary("vcruntime140"); //NON-NLS
+                System.loadLibrary("msvcp140"); //NON-NLS
+
+                logger.log(Level.INFO, "Visual C Runtime libraries loaded"); //NON-NLS
             } catch (UnsatisfiedLinkError e) {
-                logger.log(Level.SEVERE, "Error loading MSVCR100 and MSVCP100 libraries, ", e); //NON-NLS
+                logger.log(Level.SEVERE, "Error loading Visual C Runtime libraries, ", e); //NON-NLS
             }
 
             try {
@@ -85,14 +127,14 @@ public class Installer extends ModuleInstall {
             } catch (UnsatisfiedLinkError e) {
                 logger.log(Level.SEVERE, "Error loading EWF library, ", e); //NON-NLS
             }
-            
+
             try {
                 System.loadLibrary("libvmdk"); //NON-NLS
                 logger.log(Level.INFO, "VMDK library loaded"); //NON-NLS
             } catch (UnsatisfiedLinkError e) {
                 logger.log(Level.SEVERE, "Error loading VMDK library, ", e); //NON-NLS
             }
-            
+
             try {
                 System.loadLibrary("libvhdi"); //NON-NLS
                 logger.log(Level.INFO, "VHDI library loaded"); //NON-NLS
@@ -107,7 +149,7 @@ public class Installer extends ModuleInstall {
             } catch (UnsatisfiedLinkError e) {
                 logger.log(Level.SEVERE, "Error loading MSVCR120 library, ", e); //NON-NLS
             }
-            
+
             try {
                 System.loadLibrary("libeay32"); //NON-NLS
                 logger.log(Level.INFO, "LIBEAY32 library loaded"); //NON-NLS
@@ -122,18 +164,20 @@ public class Installer extends ModuleInstall {
                 logger.log(Level.SEVERE, "Error loading SSLEAY32 library, ", e); //NON-NLS
             }
 
-            // This library name is different in 32-bit versus 64-bit
-            String libintlName = "libintl-8"; //NON-NLS
-            if (PlatformUtil.is64BitJVM() == false) {
-                libintlName = "intl"; //NON-NLS
-            }
             try {
-                System.loadLibrary(libintlName); //NON-NLS
-                logger.log(Level.INFO, libintlName + " library loaded"); //NON-NLS
+                System.loadLibrary("libiconv-2"); //NON-NLS
+                logger.log(Level.INFO, "libiconv-2 library loaded"); //NON-NLS
             } catch (UnsatisfiedLinkError e) {
-                logger.log(Level.SEVERE, "Error loading " + libintlName + " library, ", e); //NON-NLS
+                logger.log(Level.SEVERE, "Error loading libiconv-2 library, ", e); //NON-NLS
             }
 
+            try {
+                System.loadLibrary("libintl-8"); //NON-NLS
+                logger.log(Level.INFO, "libintl-8 library loaded"); //NON-NLS
+            } catch (UnsatisfiedLinkError e) {
+                logger.log(Level.SEVERE, "Error loading libintl-8 library, ", e); //NON-NLS
+            }
+            
             try {
                 System.loadLibrary("libpq"); //NON-NLS
                 logger.log(Level.INFO, "LIBPQ library loaded"); //NON-NLS
@@ -156,7 +200,7 @@ public class Installer extends ModuleInstall {
     /**
      * Check if JavaFx initialized
      *
-     * @return false if java fx not initialized (classes coult not load), true
+     * @return false if java fx not initialized (classes could not load), true
      *         if initialized
      */
     public static boolean isJavaFxInited() {

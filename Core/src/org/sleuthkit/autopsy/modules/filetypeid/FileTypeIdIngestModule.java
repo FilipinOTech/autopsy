@@ -71,9 +71,6 @@ public class FileTypeIdIngestModule implements FileIngestModule {
     FileTypeIdIngestModule() {
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public void startUp(IngestJobContext context) throws IngestModuleException {
         jobId = context.getJobId();
@@ -85,12 +82,8 @@ public class FileTypeIdIngestModule implements FileIngestModule {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public ProcessResult process(AbstractFile file) {
-
         /**
          * Attempt to detect the file type. Do it within an exception firewall,
          * so that any issues with reading file content or complaints from tika
@@ -107,9 +100,6 @@ public class FileTypeIdIngestModule implements FileIngestModule {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public void shutDown() {
         /**

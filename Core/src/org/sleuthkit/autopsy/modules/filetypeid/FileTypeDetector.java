@@ -19,12 +19,19 @@
 package org.sleuthkit.autopsy.modules.filetypeid;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 import org.apache.tika.Tika;
-import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypes;
+import org.openide.util.NbBundle;
 import org.sleuthkit.autopsy.casemodule.Case;
+import org.sleuthkit.autopsy.casemodule.services.Blackboard;
+import org.sleuthkit.autopsy.coreutils.Logger;
+import org.sleuthkit.autopsy.coreutils.MessageNotifyUtil;
 import org.sleuthkit.datamodel.AbstractFile;
 import org.sleuthkit.datamodel.BlackboardArtifact;
 import org.sleuthkit.datamodel.BlackboardAttribute;
@@ -38,11 +45,13 @@ import org.sleuthkit.datamodel.TskData;
  */
 public class FileTypeDetector {
 
+    private static final Logger logger = Logger.getLogger(FileTypeDetector.class.getName());
     private static final Tika tika = new Tika();
     private static final int BUFFER_SIZE = 64 * 1024;
     private final byte buffer[] = new byte[BUFFER_SIZE];
     private final List<FileType> userDefinedFileTypes;
     private final List<FileType> autopsyDefinedFileTypes;
+    private static SortedSet<String> detectedTypes;    //no optional parameters
 
     /**
      * Constructs an object that detects the MIME type of a file by an
@@ -89,16 +98,32 @@ public class FileTypeDetector {
      * @return True or false.
      */
     public boolean isDetectable(String mimeType) {
-        return isDetectableAsCustomType(userDefinedFileTypes, mimeType) 
+        return isDetectableAsCustomType(userDefinedFileTypes, mimeType)
                 || isDetectableAsCustomType(autopsyDefinedFileTypes, mimeType)
                 || isDetectableByTika(mimeType);
+    }
+
+    /**
+     * Returns an unmodifiable list of standard MIME types that does not contain
+     * types with optional parameters. The list has no duplicate types and is in
+     * alphabetical order.
+     *
+     * @return an unmodifiable view of a set of MIME types
+     */
+    public static synchronized SortedSet<String> getStandardDetectedTypes() {
+        if (detectedTypes == null) {
+            detectedTypes = org.apache.tika.mime.MimeTypes.getDefaultMimeTypes().getMediaTypeRegistry().getTypes()
+                    .stream().filter(t -> !t.hasParameters()).map(s -> s.toString()).collect(Collectors.toCollection(TreeSet::new));
+        }
+        return Collections.unmodifiableSortedSet(detectedTypes);
     }
 
     /**
      * Determines whether or not a given MIME type is detectable as a
      * user-defined MIME type by this detector.
      *
-     * @param mimeType The MIME type name (e.g., "text/html").
+     * @param customTypes
+     * @param mimeType    The MIME type name (e.g., "text/html").
      *
      * @return True or false.
      */
@@ -119,15 +144,7 @@ public class FileTypeDetector {
      * @return True or false.
      */
     private boolean isDetectableByTika(String mimeType) {
-        String[] split = mimeType.split("/");
-        if (split.length == 2) {
-            String type = split[0];
-            String subtype = split[1];
-            MediaType mediaType = new MediaType(type, subtype);
-            SortedSet<MediaType> m = MimeTypes.getDefaultMimeTypes().getMediaTypeRegistry().getTypes();
-            return m.contains(mediaType);
-        }
-        return false;
+        return FileTypeDetector.getStandardDetectedTypes().contains(removeOptionalParameter(mimeType));
     }
 
     /**
@@ -189,7 +206,10 @@ public class FileTypeDetector {
          */
         String mimeType = file.getMIMEType();
         if (null != mimeType) {
-            return mimeType;
+            // We remove the optional parameter to allow this method to work
+            // with legacy databases that may contain MIME types with the
+            // optional parameter attached.
+            return removeOptionalParameter(mimeType);
         }
 
         /*
@@ -200,7 +220,8 @@ public class FileTypeDetector {
         if (!file.isFile() || file.getSize() <= 0
                 || (file.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.UNALLOC_BLOCKS)
                 || (file.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.UNUSED_BLOCKS)
-                || (file.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.VIRTUAL_DIR)) {
+                || (file.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.VIRTUAL_DIR)
+                || (file.getType() == TskData.TSK_DB_FILES_TYPE_ENUM.SLACK)) {
             mimeType = MimeTypes.OCTET_STREAM;
         }
 
@@ -240,6 +261,10 @@ public class FileTypeDetector {
                  * Remove the Tika suffix from the MIME type name.
                  */
                 mimeType = tikaType.replace("tika-", ""); //NON-NLS
+                /*
+                 * Remove the optional parameter from the MIME type.
+                 */
+                mimeType = removeOptionalParameter(mimeType);
 
             } catch (Exception ignored) {
                 /*
@@ -275,20 +300,23 @@ public class FileTypeDetector {
              * Add the MIME type to the files table in the case database.
              */
             Case.getCurrentCase().getSleuthkitCase().setFileMIMEType(file, mimeType);
-
-            /*
-             * Post to the blackboard, adding the file type attribute to the
-             * general info artifact. A property change is not fired for this
-             * posting because general info artifacts are different from other
-             * artifacts, e.g., they are not displayed in the results tree.
-             */
-            BlackboardArtifact getInfoArt = file.getGenInfoArtifact();
-            @SuppressWarnings("deprecation")
-            BlackboardAttribute batt = new BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_FILE_TYPE_SIG, FileTypeIdModuleFactory.getModuleName(), mimeType);
-            getInfoArt.addAttribute(batt);
         }
 
         return mimeType;
+    }
+
+    /**
+     * Removes the optional parameter from a MIME type string
+     * @param  mimeType
+     * @return MIME type without the optional parameter
+     */
+    private String removeOptionalParameter(String mimeType) {
+        int indexOfSemicolon = mimeType.indexOf(";");
+        if (indexOfSemicolon != -1 ) {
+            return mimeType.substring(0, indexOfSemicolon).trim();
+        } else {
+            return mimeType;
+        }
     }
 
     /**
@@ -304,6 +332,32 @@ public class FileTypeDetector {
     private String detectUserDefinedType(AbstractFile file) throws TskCoreException {
         for (FileType fileType : userDefinedFileTypes) {
             if (fileType.matches(file)) {
+                if (fileType.createInterestingFileHit()) {
+                    BlackboardArtifact artifact;
+                    artifact = file.newArtifact(BlackboardArtifact.ARTIFACT_TYPE.TSK_INTERESTING_FILE_HIT);
+                    BlackboardAttribute setNameAttribute = new BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_SET_NAME, FileTypeIdModuleFactory.getModuleName(), fileType.getInterestingFilesSetName());
+                    artifact.addAttribute(setNameAttribute);
+
+                    /*
+                     * Use the MIME type as the category attribute, i.e., the
+                     * rule that determined this file belongs to the interesting
+                     * files set.
+                     */
+                    BlackboardAttribute ruleNameAttribute = new BlackboardAttribute(BlackboardAttribute.ATTRIBUTE_TYPE.TSK_CATEGORY, FileTypeIdModuleFactory.getModuleName(), fileType.getMimeType());
+                    artifact.addAttribute(ruleNameAttribute);
+
+                    /*
+                     * Index the artifact for keyword search.
+                     */
+                    try {
+                        Case.getCurrentCase().getServices().getBlackboard().indexArtifact(artifact);
+                    } catch (Blackboard.BlackboardException ex) {
+                        logger.log(Level.SEVERE, String.format("Unable to index blackboard artifact %d", artifact.getArtifactID()), ex); //NON-NLS
+                        MessageNotifyUtil.Notify.error(
+                                NbBundle.getMessage(Blackboard.class, "Blackboard.unableToIndexArtifact.exception.msg"), artifact.getDisplayName());
+                    }
+                }
+
                 return fileType.getMimeType();
             }
         }

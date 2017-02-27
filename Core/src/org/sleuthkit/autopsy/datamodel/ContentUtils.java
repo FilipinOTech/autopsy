@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -42,6 +43,7 @@ import org.sleuthkit.datamodel.Image;
 import org.sleuthkit.datamodel.LayoutFile;
 import org.sleuthkit.datamodel.LocalFile;
 import org.sleuthkit.datamodel.ReadContentInputStream;
+import org.sleuthkit.datamodel.SlackFile;
 import org.sleuthkit.datamodel.TskException;
 import org.sleuthkit.datamodel.VirtualDirectory;
 
@@ -184,17 +186,13 @@ public final class ContentUtils {
      */
     public static <T> long writeToFile(Content content, java.io.File outputFile,
             ProgressHandle progress, Future<T> worker, boolean source) throws IOException {
-
         InputStream in = new ReadContentInputStream(content);
-
-        boolean append = false;
-        FileOutputStream out = new FileOutputStream(outputFile, append);
 
         // Get the unit size for a progress bar
         int unit = (int) (content.getSize() / 100);
         long totalRead = 0;
 
-        try {
+        try (FileOutputStream out = new FileOutputStream(outputFile, false)) {
             byte[] buffer = new byte[TO_FILE_BUFFER_SIZE];
             int len = in.read(buffer);
             while (len != -1) {
@@ -216,13 +214,47 @@ public final class ContentUtils {
                 }
             }
         } finally {
-            out.close();
+            in.close();
         }
         return totalRead;
     }
 
     public static void writeToFile(Content content, java.io.File outputFile) throws IOException {
         writeToFile(content, outputFile, null, null, false);
+    }
+    
+    /**
+     * Reads all the data from any content object and writes (extracts) it to a
+     * file, using a cancellation check instead of a Future object method.
+     * 
+     * @param content     Any content object.
+     * @param outputFile  Will be created if it doesn't exist, and overwritten
+     *                    if it does
+     * @param cancelCheck A function used to check if the file write process
+     *                    should be terminated.
+     * @return number of bytes extracted
+     * @throws IOException if file could not be written
+     */
+    public static long writeToFile(Content content, java.io.File outputFile,
+            Supplier<Boolean> cancelCheck) throws IOException {
+        InputStream in = new ReadContentInputStream(content);
+        long totalRead = 0;
+        
+        try (FileOutputStream out = new FileOutputStream(outputFile, false)) {
+            byte[] buffer = new byte[TO_FILE_BUFFER_SIZE];
+            int len = in.read(buffer);
+            while (len != -1) {
+                out.write(buffer, 0, len);
+                totalRead += len;
+                if (cancelCheck.get()) {
+                    break;
+                }
+                len = in.read(buffer);
+            }
+        } finally {
+            in.close();
+        }
+        return totalRead;
     }
 
     /**
@@ -324,6 +356,18 @@ public final class ContentUtils {
             }
             return null;
         }
+        
+        @Override
+        public Void visit(SlackFile f) {
+            try {
+                ContentUtils.writeToFile(f, dest, progress, worker, source);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE,
+                        "Trouble extracting slack file to " + dest.getAbsolutePath(), //NON-NLS
+                        ex);
+            }
+            return null;
+        }
 
         @Override
         public Void visit(Directory dir) {
@@ -378,10 +422,10 @@ public final class ContentUtils {
         }
 
         @Override
-        protected Void defaultVisit(Content cntnt) {
+        protected Void defaultVisit(Content content) {
             throw new UnsupportedOperationException(NbBundle.getMessage(this.getClass(),
                     "ContentUtils.exception.msg",
-                    cntnt.getClass().getSimpleName()));
+                    content.getClass().getSimpleName()));
         }
     }
 
@@ -393,4 +437,5 @@ public final class ContentUtils {
     public static boolean shouldDisplayTimesInLocalTime() {
         return displayTimesInLocalTime;
     }
+    
 }

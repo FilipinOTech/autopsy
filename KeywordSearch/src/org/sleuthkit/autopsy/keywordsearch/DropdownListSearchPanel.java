@@ -1,15 +1,15 @@
 /*
  * Autopsy Forensic Browser
- * 
+ *
  * Copyright 2011-2015 Basis Technology Corp.
  * Contact: carrier <at> sleuthkit <dot> org
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -90,10 +90,9 @@ class DropdownListSearchPanel extends KeywordSearchPanel {
         for (int i = 0; i < keywordsTable.getColumnCount(); i++) {
             column = keywordsTable.getColumnModel().getColumn(i);
             if (i == 0) {
-                column.setPreferredWidth(((int) (rightWidth * 0.78)));
+                column.setPreferredWidth(((int) (rightWidth * 0.60)));
             } else {
-                column.setPreferredWidth(((int) (rightWidth * 0.20)));
-                column.setCellRenderer(new RightCheckBoxRenderer());
+                column.setPreferredWidth(((int) (rightWidth * 0.38)));
             }
         }
 
@@ -120,12 +119,9 @@ class DropdownListSearchPanel extends KeywordSearchPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 Object source = evt.getSource();
                 if (source instanceof String && ((String) source).equals("LOCAL")) { //NON-NLS
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            ingestRunning = IngestManager.getInstance().isIngestRunning();
-                            updateComponents();
-                        }
+                    EventQueue.invokeLater(() -> {
+                        ingestRunning = IngestManager.getInstance().isIngestRunning();
+                        updateComponents();
                     });
                 }
             }
@@ -220,8 +216,7 @@ class DropdownListSearchPanel extends KeywordSearchPanel {
         keywordsTable.setBackground(new java.awt.Color(240, 240, 240));
         keywordsTable.setFont(keywordsTable.getFont().deriveFont(keywordsTable.getFont().getStyle() & ~java.awt.Font.BOLD, 11));
         keywordsTable.setModel(keywordsTableModel);
-        keywordsTable.setShowHorizontalLines(false);
-        keywordsTable.setShowVerticalLines(false);
+        keywordsTable.setGridColor(new java.awt.Color(153, 153, 153));
         rightPane.setViewportView(keywordsTable);
 
         jSplitPane1.setRightComponent(rightPane);
@@ -318,8 +313,8 @@ class DropdownListSearchPanel extends KeywordSearchPanel {
     private class KeywordListsTableModel extends AbstractTableModel {
         //data
 
-        private XmlKeywordSearchList listsHandle = XmlKeywordSearchList.getCurrent();
-        private List<ListTableEntry> listData = new ArrayList<>();
+        private final XmlKeywordSearchList listsHandle = XmlKeywordSearchList.getCurrent();
+        private final List<ListTableEntry> listData = new ArrayList<>();
 
         @Override
         public int getColumnCount() {
@@ -494,7 +489,7 @@ class DropdownListSearchPanel extends KeywordSearchPanel {
                     ret = NbBundle.getMessage(this.getClass(), "KeywordSearch.nameColLbl");
                     break;
                 case 1:
-                    ret = NbBundle.getMessage(this.getClass(), "KeywordSearch.regExColLbl");
+                    ret = NbBundle.getMessage(this.getClass(), "KeywordSearch.typeColLbl");
                     break;
                 default:
                     break;
@@ -517,7 +512,7 @@ class DropdownListSearchPanel extends KeywordSearchPanel {
                         ret = (Object) entry.name;
                         break;
                     case 1:
-                        ret = (Object) entry.regex;
+                        ret = (Object) entry.keywordType;
                         break;
                     default:
                         break;
@@ -557,11 +552,11 @@ class DropdownListSearchPanel extends KeywordSearchPanel {
         private class KeywordTableEntry implements Comparable<KeywordTableEntry> {
 
             String name;
-            Boolean regex;
+            String keywordType;
 
             KeywordTableEntry(Keyword keyword) {
-                this.name = keyword.getQuery();
-                this.regex = !keyword.isLiteral();
+                this.name = keyword.getSearchTerm();
+                this.keywordType = keyword.getSearchTermType();
             }
 
             @Override
@@ -592,30 +587,6 @@ class DropdownListSearchPanel extends KeywordSearchPanel {
             } else {
                 setBackground(listsTable.getBackground());
             }
-
-            return this;
-        }
-    }
-
-    private class RightCheckBoxRenderer extends JCheckBox implements TableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(
-                JTable table, Object value,
-                boolean isSelected, boolean hasFocus,
-                int row, int column) {
-
-            this.setHorizontalAlignment(JCheckBox.CENTER);
-            this.setVerticalAlignment(JCheckBox.CENTER);
-
-            Boolean selected = (Boolean) table.getModel().getValueAt(row, 1);
-            setSelected(selected);
-            if (isSelected) {
-                setBackground(keywordsTable.getSelectionBackground());
-            } else {
-                setBackground(keywordsTable.getBackground());
-            }
-            setEnabled(false);
 
             return this;
         }

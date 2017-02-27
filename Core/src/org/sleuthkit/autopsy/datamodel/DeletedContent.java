@@ -147,15 +147,10 @@ public class DeletedContent implements AutopsyVisitableItem {
             return s;
         }
 
-        /*
-         * TODO (AUT-1849): Correct or remove peristent column reordering code
-         *
-         * Added to support this feature.
-         */
-//        @Override
-//        public String getItemType() {
-//            return "DeletedContent"; //NON-NLS
-//        }
+        @Override
+        public String getItemType() {
+            return getClass().getName();
+        }
     }
 
     public static class DeletedContentsChildren extends ChildFactory<DeletedContent.DeletedContentFilter> {
@@ -163,7 +158,7 @@ public class DeletedContent implements AutopsyVisitableItem {
         private SleuthkitCase skCase;
         private Observable notifier;
         // true if we have already told user that not all files will be shown
-        private static boolean maxFilesDialogShown = false;
+        private static volatile boolean maxFilesDialogShown = false;
 
         public DeletedContentsChildren(SleuthkitCase skCase) {
             this.skCase = skCase;
@@ -285,16 +280,6 @@ public class DeletedContent implements AutopsyVisitableItem {
                 updateDisplayName();
             }
 
-            /*
-             * TODO (AUT-1849): Correct or remove peristent column reordering
-             * code
-             *
-             * Added to support this feature.
-             */
-//            @Override
-//            public String getItemType() {
-//                return "DeletedContentChildren"; //NON-NLS
-//            }
             // update the display name when new events are fired
             private class DeletedContentNodeObserver implements Observer {
 
@@ -338,8 +323,17 @@ public class DeletedContent implements AutopsyVisitableItem {
             public boolean isLeafTypeNode() {
                 return true;
             }
-        }
 
+            @Override
+            public String getItemType() {
+                /**
+                 * Return getClass().getName() + filter.getName() if custom
+                 * settings are desired for different filters.
+                 */
+                return DisplayableItemNode.FILE_PARENT_NODE_KEY;
+            }
+        }
+        
         static class DeletedContentChildren extends ChildFactory.Detachable<AbstractFile> {
 
             private final SleuthkitCase skCase;

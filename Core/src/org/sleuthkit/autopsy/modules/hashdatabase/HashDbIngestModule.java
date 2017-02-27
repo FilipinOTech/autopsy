@@ -93,6 +93,9 @@ public class HashDbIngestModule implements FileIngestModule {
     @Override
     public void startUp(org.sleuthkit.autopsy.ingest.IngestJobContext context) throws IngestModuleException {
         jobId = context.getJobId();
+        if (!hashDbManager.verifyAllDatabasesLoadedCorrectly()) {
+            throw new IngestModuleException("Could not load all hash databases");
+        }
         updateEnabledHashSets(hashDbManager.getKnownBadFileHashSets(), knownBadHashSets);
         updateEnabledHashSets(hashDbManager.getKnownFileHashSets(), knownHashSets);
 
@@ -143,7 +146,8 @@ public class HashDbIngestModule implements FileIngestModule {
         blackboard = Case.getCurrentCase().getServices().getBlackboard();
 
         // Skip unallocated space files.
-        if (file.getType().equals(TskData.TSK_DB_FILES_TYPE_ENUM.UNALLOC_BLOCKS)) {
+        if ((file.getType().equals(TskData.TSK_DB_FILES_TYPE_ENUM.UNALLOC_BLOCKS) ||
+                file.getType().equals(TskData.TSK_DB_FILES_TYPE_ENUM.SLACK))) {
             return ProcessResult.OK;
         }
 

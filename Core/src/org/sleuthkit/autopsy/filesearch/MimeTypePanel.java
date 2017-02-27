@@ -1,35 +1,37 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Autopsy Forensic Browser
+ *
+ * Copyright 2011-2016 Basis Technology Corp.
+ * Contact: carrier <at> sleuthkit <dot> org
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.sleuthkit.autopsy.filesearch;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.logging.Level;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.mime.MimeTypes;
 import org.sleuthkit.autopsy.coreutils.Logger;
 import org.sleuthkit.autopsy.modules.filetypeid.FileTypeDetector;
 
-/**
- *
- * @author oliver
- */
 public class MimeTypePanel extends javax.swing.JPanel {
 
-    private static final SortedSet<MediaType> mediaTypes = MimeTypes.getDefaultMimeTypes().getMediaTypeRegistry().getTypes();
     private static final Logger logger = Logger.getLogger(MimeTypePanel.class.getName());
     private static final long serialVersionUID = 1L;
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /**
      * Creates new form MimeTypePanel
@@ -40,15 +42,15 @@ public class MimeTypePanel extends javax.swing.JPanel {
         this.mimeTypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                pcs.firePropertyChange(FileSearchPanel.EVENT.CHECKED.toString(), null, null);
+                firePropertyChange(FileSearchPanel.EVENT.CHECKED.toString(), null, null);
             }
         });
     }
 
     private String[] getMimeTypeArray() {
         Set<String> fileTypesCollated = new HashSet<>();
-        for (MediaType mediaType : mediaTypes) {
-            fileTypesCollated.add(mediaType.toString());
+        for (String mediaType : FileTypeDetector.getStandardDetectedTypes()) {
+            fileTypesCollated.add(mediaType);
         }
 
         FileTypeDetector fileTypeDetector;
@@ -80,21 +82,11 @@ public class MimeTypePanel extends javax.swing.JPanel {
     boolean isSelected() {
         return this.mimeTypeCheckBox.isSelected();
     }
-    
+
     void setComponentsEnabled() {
         boolean enabled = this.isSelected();
         this.mimeTypeList.setEnabled(enabled);
         this.jLabel1.setEnabled(enabled);
-    }
-    
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        pcs.addPropertyChangeListener(pcl);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
-        pcs.removePropertyChangeListener(pcl);
     }
 
     /**
@@ -162,7 +154,7 @@ public class MimeTypePanel extends javax.swing.JPanel {
 
     private void mimeTypeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mimeTypeCheckBoxActionPerformed
         setComponentsEnabled();
-        pcs.firePropertyChange(FileSearchPanel.EVENT.CHECKED.toString(), null, null);
+        firePropertyChange(FileSearchPanel.EVENT.CHECKED.toString(), null, null);
         this.mimeTypeList.setSelectedIndices(new int[0]);
     }//GEN-LAST:event_mimeTypeCheckBoxActionPerformed
 
